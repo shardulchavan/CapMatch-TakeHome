@@ -97,14 +97,14 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ center, circles, addres
           />
           
           {/* Add radius circles */}
-          {circles.map((circle, index) => (
+            {circles.slice().reverse().map((circle, index) => (
             <GeoJSON
-              key={index}
-              data={circle}
-              style={circleStyle}
-              onEachFeature={onEachCircle}
+                key={`circle-${index}-${circle.properties.radius_miles}`}
+                data={circle}
+                style={circleStyle}
+                onEachFeature={onEachCircle}
             />
-          ))}
+            ))}
           
           {/* Center marker */}
           <Marker position={center}>

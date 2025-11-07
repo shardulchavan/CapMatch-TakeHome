@@ -53,12 +53,6 @@ const RadiusCards: React.FC<RadiusCardsProps> = ({ radiusData }) => {
                   ${actualIncome.toLocaleString()}
                 </span>
               </div>
-              
-              {data?.aggregation_info && (
-                <div className={`text-xs ${config.color} ${config.bgColor} px-2 py-1 rounded text-center`}>
-                  {data.aggregation_info}
-                </div>
-              )}
             </div>
           </div>
         );

@@ -2,9 +2,10 @@ import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import RadiusCards from '../components/RadiusCards';
 import GrowthTrends from '../components/GrowthTrends';
-import PopulationAnalysis from '../components/PopulationAnalysis';
+import MarketMetricsDashboard from '../components/MarketMetricsDashboard'; 
 import IncomeDistributionChart from '../components/IncomeDistributionChart';
 import EducationDistribution from '../components/EducationDistribution';
+import HomeValueGrowthChart from '../components/HomeValue';
 import MarketInsights from '../components/MarketInsights';
 import InteractiveMap from '../components/InteractiveMap';
 
@@ -56,60 +57,63 @@ const DemographicsDetail: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">
             {coordinates?.matched_address || decodeURIComponent(address || '')}
           </h1>
-          <p className="text-gray-600 mt-2">Comprehensive Market Analysis</p>
+          <p className="text-gray-600 mt-2">Market Analysis Dashboard</p>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        {/* Population Radius Cards */}
+        {/* Population Overview */}
         <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Population by Radius</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Population Overview</h2>
           <RadiusCards radiusData={demographics.radius_data} />
         </section>
 
-        {/* 5-Year Growth Trends */}
+        {/* Growth Metrics */}
         <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">5-Year Growth Trends</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Growth Metrics</h2>
           <GrowthTrends growthMetrics={demographics.growth_metrics} />
         </section>
 
-        {/* Analysis Section - Two columns with explicit height matching */}
+        {/* Market Metrics Dashboard - NEW COMPONENT */}
+        <section>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Market Analysis</h2>
+          <MarketMetricsDashboard radiusData={demographics.radius_data} />
+        </section>
+
+        {/* Two Column Layout */}
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Population Analysis */}
+          {/* Left Column - Income Distribution */}
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Population Analysis</h2>
-            <div className="h-full flex flex-col">
-              <PopulationAnalysis radiusData={demographics.radius_data} />
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Household Income</h2>
+            <IncomeDistributionChart 
+              incomeData={demographics.formatted_data?.income_distribution} 
+              radiusData={demographics.radius_data}
+            />
           </section>
 
-          {/* Right Column - Income and Education */}
-          <div className="flex flex-col gap-8">
-            <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Income Distribution</h2>
-              <IncomeDistributionChart 
-                incomeData={demographics.formatted_data?.income_distribution} 
-                radiusData={demographics.radius_data}
-              />
-            </section>
-            
-            <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Education Trends (5-Mile Radius)</h2>
-              <EducationDistribution radiusData={demographics.radius_data} />
-            </section>
-          </div>
+          {/* Right Column - Property Values */}
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Property Values</h2>
+            <HomeValueGrowthChart radiusData={demographics.radius_data} />
+          </section>
         </div>
+
+        {/* Education Distribution */}
+        <section>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Education Levels</h2>
+          <EducationDistribution radiusData={demographics.radius_data} />
+        </section>
 
         {/* Market Insights */}
         <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Market Insights</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Key Insights</h2>
           <MarketInsights insights={demographics.market_insights} />
         </section>
 
         {/* Interactive Map */}
         <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Interactive Population Heatmap</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Geographic Coverage</h2>
           <InteractiveMap 
             center={[coordinates.lat, coordinates.lng]}
             circles={demographics.map_circles}

@@ -338,6 +338,7 @@ class CensusClient:
                         populations[radius_key] = int(pop) if pop else 0
                     
                     result["map_circles"] = aggregator.create_map_circles(lat, lng, radii, populations)
+                    print(f"[CENSUS CLIENT] Created circles with radii: {[c['properties']['radius_miles'] for c in result['map_circles']]}")    
                     
             except ImportError:
                 print("[CENSUS CLIENT] RadiusAggregator not available, using county-level data")

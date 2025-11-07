@@ -298,7 +298,9 @@ class RadiusAggregator:
         }
         
         for radius in radii:
+            print(f"\n[RADIUS Circle] Processing {radius} mile radius")
             radius_key = f"{radius}_mile"
+            print(radius_key)
             
             # Create circle points
             points = []
