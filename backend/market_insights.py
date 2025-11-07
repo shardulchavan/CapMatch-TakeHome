@@ -1,4 +1,8 @@
 from typing import Dict, List, Any
+import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MarketInsightsEngine:
     """
@@ -327,30 +331,45 @@ class MarketInsightsEngine:
 def generate_market_insights(demographics_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate market insights from demographics data
-    Can be called from FastAPI endpoint or census client
+    Can be called from sync or async context
     """
+    # Always try Gemini first
+    try:
+        # Import and use Gemini market insights
+        from gemini_market_insights import generate_gemini_market_insights
+        
+        gemini_results = generate_gemini_market_insights(demographics_data)
+        if gemini_results and gemini_results.get("insights_metadata", {}).get("generated"):
+            logger.info("Successfully generated insights with Gemini")
+            return gemini_results
+        
+    except ImportError:
+        logger.error("Gemini market insights not available, using rule-based")
+    except Exception as e:
+        logger.error(f"Gemini insights failed: {e}, using rule-based")
+    
+    # Fallback to rule-based engine
     try:
         engine = MarketInsightsEngine()
         insights = engine.generate_insights(demographics_data)
         return engine.format_for_ui(insights)
     except Exception as e:
-        # Return default insights on error
-        print(f"Error generating insights: {e}")
+        logger.error(f"Error generating insights: {e}")
         return {
             "demographic_strengths": [
-                "Market analysis in progress",
-                "Data evaluation pending",
-                "Demographics being processed"
+                "Data analysis in progress",
+                "Market evaluation pending",
+                "Demographics being analyzed"
             ],
             "market_opportunities": [
+                "Market evaluation pending",
                 "Opportunities being identified",
-                "Market assessment ongoing",
                 "Analysis in progress"
             ],
             "target_demographics": [
-                "Target groups being analyzed",
-                "Demographics under review",
-                "Segmentation in progress"
+                "Demographics being analyzed",
+                "Segments under review",
+                "Profiling in progress"
             ],
             "insights_metadata": {
                 "generated": False,

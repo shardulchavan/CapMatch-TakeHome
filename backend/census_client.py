@@ -374,14 +374,32 @@ class CensusClient:
             print("[CENSUS CLIENT] Formatting data for UI...")
             result["formatted_data"] = self._format_for_demographics_card(result)
             
-            # Generate market insights
             try:
+                from gemini_market_insights import generate_gemini_market_insights_async
+                print("[CENSUS CLIENT] Generating market insights with Gemini...")
+                result["market_insights"] = await generate_gemini_market_insights_async(result)
+                print("[CENSUS CLIENT] ✓ Gemini insights generated")
+            except ImportError:
+                print("[CENSUS CLIENT] Gemini not available, using rule-based insights")
                 from market_insights import generate_market_insights
-                print("[CENSUS CLIENT] Generating market insights...")
                 result["market_insights"] = generate_market_insights(result)
-                print("[CENSUS CLIENT] ✓ Market insights generated")
+            except Exception as e:
+                print(f"[CENSUS CLIENT] Gemini error: {e}, falling back to rule-based")
+                from market_insights import generate_market_insights
+                result["market_insights"] = generate_market_insights(result)
+                # else:
+                #     from market_insights import generate_market_insights
+                #     print("[CENSUS CLIENT] Generating market insights...")
+                #     result["market_insights"] = generate_market_insights(result)
+                #     print("[CENSUS CLIENT] ✓ Market insights generated")
+                    
             except ImportError:
                 print("[CENSUS CLIENT] Market insights module not available")
+                result["market_insights"] = {
+                    "demographic_strengths": ["Data analysis in progress"],
+                    "market_opportunities": ["Market evaluation pending"],
+                    "target_demographics": ["Demographics being analyzed"]
+                }
             except Exception as e:
                 print(f"[CENSUS CLIENT] Error generating insights: {e}")
                 result["market_insights"] = {

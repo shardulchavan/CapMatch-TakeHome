@@ -58,6 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Request/Response models
 class AddressRequest(BaseModel):
     address: str
