@@ -13,6 +13,7 @@ dl==0.1.0
 # docutils must be <0.22 for Sphinx 7.x compatibility
 # pin to a known compatible release
 docutils==0.21.2
+aiohttp==3.9.0
 email_validator==2.3.0
 eval_type_backport==0.2.2
 fastapi_cli==0.0.14
