@@ -12,27 +12,28 @@ const PopulationAnalysis: React.FC<PopulationAnalysisProps> = ({ radiusData }) =
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-card overflow-hidden">
-      {radii.map((radius, index) => {
-        const data = radiusData[radius.key];
-        const currentData = data?.current?.data || data?.current || {};
-        const tractCount = data?.tract_count || 1;
-        
-        // Calculate actual values (fix aggregated data)
-        const population = currentData.total_population || 0;
-        const medianIncome = currentData.median_household_income || 0;
-        const medianAge = currentData.median_age || 0;
-        
-        const actualIncome = tractCount > 1 ? Math.round(medianIncome / tractCount) : medianIncome;
-        let actualAge = tractCount > 1 ? (medianAge / tractCount) : medianAge;
-        
-        // Sanity check for age - if it's negative or > 100, it's likely an error
-        if (actualAge < 0 || actualAge > 100) {
-          actualAge = 38; // Use a reasonable default
-        }
-        
-        return (
-          <div key={radius.key} className={`p-6 ${index !== radii.length - 1 ? 'border-b border-gray-100' : ''}`}>
+    <div className="bg-white rounded-lg shadow-card overflow-hidden flex flex-col md:flex-row">
+      <div className="flex-1 flex flex-col">
+        {radii.map((radius, index) => {
+          const data = radiusData[radius.key];
+          const currentData = data?.current?.data || data?.current || {};
+          const tractCount = data?.tract_count || 1;
+          
+          // Calculate actual values (fix aggregated data)
+          const population = currentData.total_population || 0;
+          const medianIncome = currentData.median_household_income || 0;
+          const medianAge = currentData.median_age || 0;
+          
+          const actualIncome = tractCount > 1 ? Math.round(medianIncome / tractCount) : medianIncome;
+          let actualAge = tractCount > 1 ? (medianAge / tractCount) : medianAge;
+          
+          // Sanity check for age - if it's negative or > 100, it's likely an error
+          if (actualAge < 0 || actualAge > 100) {
+            actualAge = 38; // Use a reasonable default
+          }
+          
+          return (
+            <div key={radius.key} className={`flex-1 p-8 ${index !== radii.length - 1 ? 'border-b border-gray-100' : ''}`}>
             {/* Radius Header */}
             <div className="mb-4">
               <span className={`text-sm font-medium px-3 py-1 rounded-full ${radius.color}`}>
@@ -73,6 +74,7 @@ const PopulationAnalysis: React.FC<PopulationAnalysisProps> = ({ radiusData }) =
           </div>
         );
       })}
+      </div>
     </div>
   );
 };

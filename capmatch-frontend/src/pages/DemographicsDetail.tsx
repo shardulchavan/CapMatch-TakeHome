@@ -74,16 +74,18 @@ const DemographicsDetail: React.FC = () => {
           <GrowthTrends growthMetrics={demographics.growth_metrics} />
         </section>
 
-        {/* Analysis Section - Two columns */}
+        {/* Analysis Section - Two columns with explicit height matching */}
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left Column - Population Analysis */}
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Population Analysis</h2>
-            <PopulationAnalysis radiusData={demographics.radius_data} />
+            <div className="h-full flex flex-col">
+              <PopulationAnalysis radiusData={demographics.radius_data} />
+            </div>
           </section>
 
           {/* Right Column - Income and Education */}
-          <div className="space-y-8">
+          <div className="flex flex-col gap-8">
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Income Distribution</h2>
               <IncomeDistributionChart 

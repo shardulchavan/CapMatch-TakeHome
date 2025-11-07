@@ -3,18 +3,20 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  BarElement,
   PointElement,
   LineElement,
   Title,
   Tooltip,
   Legend
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Chart } from 'react-chartjs-2';
 
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  BarElement,
   PointElement,
   LineElement,
   Title,
@@ -50,9 +52,10 @@ const EducationDistribution: React.FC<EducationDistributionProps> = ({ radiusDat
   const historicalDoctorate = historicalData.doctorate_degree || 0;
   const historicalTotal = historicalBachelors + historicalMasters + historicalProfessional + historicalDoctorate;
   
-  // Interpolate data for years between (simple linear interpolation)
+  // Interpolate data for years between
   const years = [];
   const bachelorsData = [];
+  const mastersData = [];
   const advancedData = [];
   const totalData = [];
   
@@ -63,12 +66,14 @@ const EducationDistribution: React.FC<EducationDistributionProps> = ({ radiusDat
     
     // Interpolate values
     const interpBachelors = historicalBachelors + (currentBachelors - historicalBachelors) * progress;
-    const interpAdvanced = (historicalMasters + historicalProfessional + historicalDoctorate) + 
-                          ((currentMasters + currentProfessional + currentDoctorate) - 
-                           (historicalMasters + historicalProfessional + historicalDoctorate)) * progress;
+    const interpMasters = historicalMasters + (currentMasters - historicalMasters) * progress;
+    const interpAdvanced = (historicalProfessional + historicalDoctorate) + 
+                          ((currentProfessional + currentDoctorate) - 
+                           (historicalProfessional + historicalDoctorate)) * progress;
     const interpTotal = historicalTotal + (currentTotal - historicalTotal) * progress;
     
     bachelorsData.push(Math.round(interpBachelors));
+    mastersData.push(Math.round(interpMasters));
     advancedData.push(Math.round(interpAdvanced));
     totalData.push(Math.round(interpTotal));
   }
@@ -76,29 +81,46 @@ const EducationDistribution: React.FC<EducationDistributionProps> = ({ radiusDat
   const chartData = {
     labels: years,
     datasets: [
+      // Bar chart data (stacked)
       {
-        label: "Total College Graduates",
-        data: totalData,
-        borderColor: 'rgb(69, 183, 209)',
-        backgroundColor: 'rgba(69, 183, 209, 0.1)',
-        tension: 0.3,
-        borderWidth: 2,
-      },
-      {
+        type: 'bar' as const,
         label: "Bachelor's Degrees",
         data: bachelorsData,
+        backgroundColor: 'rgba(78, 205, 196, 0.7)',
         borderColor: 'rgb(78, 205, 196)',
-        backgroundColor: 'rgba(78, 205, 196, 0.1)',
-        tension: 0.3,
-        borderWidth: 2,
+        borderWidth: 1,
+        stack: 'Stack 0',
       },
       {
-        label: "Advanced Degrees",
+        type: 'bar' as const,
+        label: "Master's Degrees",
+        data: mastersData,
+        backgroundColor: 'rgba(69, 183, 209, 0.7)',
+        borderColor: 'rgb(69, 183, 209)',
+        borderWidth: 1,
+        stack: 'Stack 0',
+      },
+      {
+        type: 'bar' as const,
+        label: "PhD/Professional",
         data: advancedData,
+        backgroundColor: 'rgba(255, 107, 107, 0.7)',
         borderColor: 'rgb(255, 107, 107)',
-        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+        borderWidth: 1,
+        stack: 'Stack 0',
+      },
+      // Line chart for total
+      {
+        type: 'line' as const,
+        label: 'Total Graduates',
+        data: totalData,
+        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
         tension: 0.3,
-        borderWidth: 2,
+        yAxisID: 'y1',
       }
     ]
   };
@@ -106,13 +128,18 @@ const EducationDistribution: React.FC<EducationDistributionProps> = ({ radiusDat
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
+    },
     plugins: {
       legend: {
         position: 'top' as const,
         labels: {
           font: {
-            size: 12
-          }
+            size: 11
+          },
+          usePointStyle: true,
         }
       },
       tooltip: {
@@ -137,20 +164,53 @@ const EducationDistribution: React.FC<EducationDistributionProps> = ({ radiusDat
         }
       },
       y: {
-        beginAtZero: true,
+        type: 'linear' as const,
+        display: true,
+        position: 'left' as const,
+        stacked: true,
+        title: {
+          display: true,
+          text: 'Number of Degrees (Stacked)',
+          font: {
+            size: 11
+          }
+        },
         ticks: {
           callback: function(tickValue: string | number) {
             return Number(tickValue).toLocaleString();
           },
           font: {
-            size: 11
+            size: 10
           }
         },
         grid: {
           color: 'rgba(0, 0, 0, 0.05)'
         }
-      }
-    }
+      },
+      y1: {
+        type: 'linear' as const,
+        display: true,
+        position: 'right' as const,
+        title: {
+          display: true,
+          text: 'Total Graduates',
+          font: {
+            size: 11
+          }
+        },
+        ticks: {
+          callback: function(tickValue: string | number) {
+            return Number(tickValue).toLocaleString();
+          },
+          font: {
+            size: 10
+          }
+        },
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+    },
   };
 
   // Calculate growth percentage
@@ -172,22 +232,22 @@ const EducationDistribution: React.FC<EducationDistributionProps> = ({ radiusDat
         </div>
       </div>
       
-      <div className="h-64">
-        <Line data={chartData} options={options} />
+      <div className="h-72">
+        <Chart type="bar" data={chartData} options={options} />
       </div>
       
       <div className="mt-4 grid grid-cols-3 gap-4 text-center">
         <div>
           <p className="text-xs text-gray-500">Bachelor's</p>
-          <p className="text-sm font-medium">{currentBachelors.toLocaleString()}</p>
+          <p className="text-sm font-medium text-teal-600">{currentBachelors.toLocaleString()}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500">Master's</p>
-          <p className="text-sm font-medium">{currentMasters.toLocaleString()}</p>
+          <p className="text-sm font-medium text-blue-600">{currentMasters.toLocaleString()}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500">PhD/Professional</p>
-          <p className="text-sm font-medium">{(currentProfessional + currentDoctorate).toLocaleString()}</p>
+          <p className="text-sm font-medium text-red-600">{(currentProfessional + currentDoctorate).toLocaleString()}</p>
         </div>
       </div>
     </div>
