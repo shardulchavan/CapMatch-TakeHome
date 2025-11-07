@@ -55,14 +55,27 @@ app.add_middleware(
     allow_origins=[
         "*",
         "https://capmatch-takehome-backend.onrender.com",
-        "https://cap-match-take-home-git-main-shardulchavans-projects.vercel.app/",
-        "https://cap-match-take-home.vercel.app/",
+        "https://cap-match-take-home-git-main-shardulchavans-projects.vercel.app",
+        "https://cap-match-take-home.vercel.app",
         "https://*.vercel.app"
                    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=[
+#         "http://localhost:3000",
+#         "https://cap-match-take-home.vercel.app",  # Add your Vercel URL
+#         "https://*.vercel.app",  # Allow all Vercel preview deployments
+#         "*"  # Or just use this to allow all origins (less secure but works)
+#     ],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 
 # Request/Response models
