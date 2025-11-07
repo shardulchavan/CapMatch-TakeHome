@@ -93,3 +93,81 @@ cd frontend
 # Install dependencies
 npm install
 ```
+### **Step 5:Start the Backend**
+```bash
+cd backend
+python fastapi_app.py
+```
+
+### **Step 5:Start the Frontend**
+```bash
+# In a new terminal
+cd frontend
+npm start
+```
+
+## 📊 Using the System
+
+### 🧪 Quick Test
+
+1. Go to [https://cap-match-take-home.vercel.app/](https://cap-match-take-home.vercel.app/)
+2. Enter an address like: `350 5th Ave, New York, NY 10118`
+3. Click **"Analyze Market"**
+4. Watch the magic happen!
+
+---
+
+### 🗺️ What You’ll See
+
+#### **Demographics Card (First View)**
+- Population circles on a mini-map  
+- Key metrics: population, growth rate, education level  
+- Click **"View Full Analysis"** for detailed insights  
+
+#### **Full Analysis Page**
+- Population by radius (**1, 3, 5 miles**)  
+- 5-year growth trends  
+- Income distribution charts  
+- Education analysis  
+- **AI-generated market insights**  
+- Interactive population **heatmap**
+
+---
+
+## 📈 Understanding the Data
+
+### **Population Metrics**
+- Total population at different distances  
+- Understand **market density**  
+- Includes **5-year growth trends**
+
+### **Income Analysis**
+- **Median household income** by radius  
+- **Income distribution** (e.g., $50K vs. $150K+)  
+- **Income growth** over 5 years  
+
+### **Market Insights (AI-Powered)**
+- **Demographic Strengths:** What makes this area attractive  
+- **Market Opportunities:** Business or investment opportunities  
+- **Target Demographics:** Who to market to in this area
+
+## 📁 Project Structure
+```
+backend/
+├── fastapi_app.py # Main API server
+├── census_client.py # Census data fetching
+├── census_geocoding_client.py # Address → Coordinates
+├── radius_aggregator.py # Radius-based data aggregation
+├── gemini_market_insights.py # AI insights generation
+└── market_insights.py # Rule-based insights (fallback)
+
+frontend/
+├── components/
+│ ├── SearchPage.tsx # Main search interface
+│ ├── DemographicsCard.tsx # Summary card view
+│ └── [other components] # Charts, maps, etc.
+└── pages/
+└── DemographicsDetail.tsx # Full analysis page
+```
+
+
