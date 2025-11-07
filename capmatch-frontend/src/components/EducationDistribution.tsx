@@ -8,11 +8,13 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarController,
+  LineController
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
 
-// Register Chart.js components
+// Register everything needed for mixed charts
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,7 +23,9 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarController,
+  LineController
 );
 
 interface EducationDistributionProps {
