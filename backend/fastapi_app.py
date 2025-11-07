@@ -55,6 +55,8 @@ app.add_middleware(
     allow_origins=[
         "*",
         "https://capmatch-takehome-backend.onrender.com",
+        "https://cap-match-take-home-git-main-shardulchavans-projects.vercel.app/",
+        "https://cap-match-take-home.vercel.app/",
         "https://*.vercel.app"
                    ],
     allow_credentials=True,
