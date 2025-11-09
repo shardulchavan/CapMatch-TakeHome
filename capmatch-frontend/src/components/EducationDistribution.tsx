@@ -1,3 +1,5 @@
+// src/components/EducationDistribution.tsx
+
 import React from 'react';
 import {
   Chart as ChartJS,

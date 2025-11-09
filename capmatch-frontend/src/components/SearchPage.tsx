@@ -1,3 +1,5 @@
+// src/components/SearchPage.tsx
+
 import React, { useState } from 'react';
 import { api, DemographicsResponse } from '../services/api';
 import DemographicsCard from './DemographicsCard';

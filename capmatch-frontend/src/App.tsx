@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import React from 'react';
 import Chart from 'chart.js/auto';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';

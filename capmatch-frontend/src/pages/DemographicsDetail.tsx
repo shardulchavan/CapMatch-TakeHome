@@ -1,3 +1,5 @@
+// src/pages/DemographicsDetail.tsx
+
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import RadiusCards from '../components/RadiusCards';
@@ -8,6 +10,8 @@ import EducationDistribution from '../components/EducationDistribution';
 import HomeValueGrowthChart from '../components/HomeValue';
 import MarketInsights from '../components/MarketInsights';
 import InteractiveMap from '../components/InteractiveMap';
+import CommunityProfile from '../components/CommunityProfile';
+import TransportationChart from '../components/TransportationChart';
 
 const DemographicsDetail: React.FC = () => {
   const { address } = useParams();
@@ -75,35 +79,62 @@ const DemographicsDetail: React.FC = () => {
           <GrowthTrends growthMetrics={demographics.growth_metrics} />
         </section>
 
-        {/* Market Metrics Dashboard - NEW COMPONENT */}
+        {/* Community Profile */}
+        {data.attom_data && !data.attom_data.errors?.length && (
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Community Profile</h2>
+            <CommunityProfile attomData={data.attom_data} />
+          </section>
+        )}
+
+        {/* Market Metrics Dashboard */}
         <section>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Market Analysis</h2>
-          <MarketMetricsDashboard radiusData={demographics.radius_data} />
+          <MarketMetricsDashboard 
+            radiusData={demographics.radius_data} 
+            attomData={data.attom_data}
+          />
         </section>
 
-        {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Income Distribution */}
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Household Income</h2>
-            <IncomeDistributionChart 
-              incomeData={demographics.formatted_data?.income_distribution} 
-              radiusData={demographics.radius_data}
-            />
-          </section>
-
-          {/* Right Column - Property Values */}
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Property Values</h2>
-            <HomeValueGrowthChart radiusData={demographics.radius_data} />
-          </section>
+        {/* Economic & Demographic Grid - 2x2 Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Row 1 */}
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Household Income</h3>
+            <div className="flex-1">
+              <IncomeDistributionChart 
+                incomeData={demographics.formatted_data?.income_distribution} 
+                radiusData={demographics.radius_data}
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Property Values</h3>
+            <div className="flex-1">
+              <HomeValueGrowthChart 
+                radiusData={demographics.radius_data} 
+              />
+            </div>
+          </div>
+          
+          {/* Row 2 */}
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Transportation</h3>
+            <div className="flex-1">
+              <TransportationChart 
+                attomData={data.attom_data} 
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Education Levels</h3>
+            <div className="flex-1">
+              <EducationDistribution radiusData={demographics.radius_data} />
+            </div>
+          </div>
         </div>
-
-        {/* Education Distribution */}
-        <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Education Levels</h2>
-          <EducationDistribution radiusData={demographics.radius_data} />
-        </section>
 
         {/* Market Insights */}
         <section>

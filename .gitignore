@@ -15,3 +15,8 @@ venv/
 
 # Secrets
 .env
+
+
+./poc_capmatch/.env
+./poc_capmatch/.venv
+.poc_capmatch/__pycache__/

@@ -1,3 +1,5 @@
+# backend/fastapi_app.py
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,9 +9,12 @@ import time
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from attom_client import AttomClient
 
 # Load environment variables
 load_dotenv()
+# Initialize client
+attom_client = AttomClient()
 
 # Initialize FastAPI app
 app = FastAPI(title="CapMatch Demographics Card API")
@@ -63,21 +68,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=[
-#         "http://localhost:3000",
-#         "https://cap-match-take-home.vercel.app",  # Add your Vercel URL
-#         "https://*.vercel.app",  # Allow all Vercel preview deployments
-#         "*"  # Or just use this to allow all origins (less secure but works)
-#     ],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-
 # Request/Response models
 class AddressRequest(BaseModel):
     address: str
@@ -86,6 +76,7 @@ class DemographicsResponse(BaseModel):
     address: str
     coordinates: Optional[Dict[str, Any]]
     demographics: Optional[Dict[str, Any]]
+    attom_data: Optional[Dict[str, Any]]
     performance: Dict[str, float]
     error: Optional[str]
     timestamp: str
@@ -102,6 +93,8 @@ async def startup_event():
     print("="*60)
     print(f"Mode: {'Production' if CENSUS_CLIENTS_AVAILABLE else 'Mock'}")
     print(f"Census API Key: {'Configured' if os.getenv('CENSUS_API_KEY') else 'Not configured'}")
+    print(f"ATTOM API Key: {'Configured' if os.getenv('ATTOM_API_KEY') else 'Not configured'}")
+
     print(f"Server: http://localhost:8000")
     print(f"Docs: http://localhost:8000/docs")
     print("="*60 + "\n")
@@ -123,6 +116,11 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat(),
         "census_api_key": "configured" if os.getenv("CENSUS_API_KEY") else "not configured"
     }
+
+@app.post("/test-attom")
+async def test_attom(request: AddressRequest):
+    data = await attom_client.get_community_by_address(request.address)
+    return data
 
 @app.post("/demographics", response_model=DemographicsResponse)
 async def get_demographics(request: AddressRequest):
@@ -151,20 +149,33 @@ async def get_demographics(request: AddressRequest):
         print("\n[STEP 2] Fetching demographics data...")
         print(f"         Radii: [1, 3, 5] miles")
         demographics_start = time.time()
-        demographics = await census_client.get_demographics_with_history(
+        census_task = census_client.get_demographics_with_history(
             lat=coordinates["lat"],
             lng=coordinates["lng"],
             radii=[1, 3, 5]
         )
+
+        attom_task = attom_client.get_community_by_address(request.address)
+        
+        # Execute both in parallel
+        census_data, attom_data = await asyncio.gather(
+            census_task, 
+            attom_task, 
+            return_exceptions=True
+        )
+        
+        # Handle ATTOM errors gracefully
+        if isinstance(attom_data, Exception):
+            attom_data = {"error": str(attom_data)}
         demographics_time = time.time() - demographics_start
         print(f"[STEP 2] ✓ Demographics fetched in {demographics_time:.2f} seconds")
         
         # Check if we got growth metrics
-        if demographics.get("growth_metrics"):
+        if census_data .get("growth_metrics"):
             print(f"\n[GROWTH METRICS]")
-            print(f"  Population Growth: {demographics['growth_metrics'].get('population_growth', 'N/A')}%")
-            print(f"  Income Growth: {demographics['growth_metrics'].get('income_growth', 'N/A')}%")
-            print(f"  Job Growth: {demographics['growth_metrics'].get('job_growth', 'N/A')}%")
+            print(f"  Population Growth: {census_data ['growth_metrics'].get('population_growth', 'N/A')}%")
+            print(f"  Income Growth: {census_data ['growth_metrics'].get('income_growth', 'N/A')}%")
+            print(f"  Job Growth: {census_data ['growth_metrics'].get('job_growth', 'N/A')}%")
         
         # Step 3: Return response
         total_time = time.time() - start_time
@@ -175,7 +186,8 @@ async def get_demographics(request: AddressRequest):
         return DemographicsResponse(
             address=request.address,
             coordinates=coordinates,
-            demographics=demographics,
+            demographics=census_data,
+            attom_data=attom_data,
             performance={
                 "geocoding_time": geocoding_time,
                 "demographics_time": demographics_time,

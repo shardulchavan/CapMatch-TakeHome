@@ -1,3 +1,5 @@
+// src/components/HomeValue.tsx
+
 import React from 'react';
 
 interface HomeValueGrowthChartProps {

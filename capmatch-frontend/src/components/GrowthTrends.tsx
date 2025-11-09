@@ -1,3 +1,5 @@
+// src/components/GrowthTrends.tsx
+
 import React from 'react';
 
 interface GrowthTrendsProps {

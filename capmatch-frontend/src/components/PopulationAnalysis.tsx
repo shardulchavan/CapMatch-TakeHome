@@ -1,3 +1,5 @@
+// src/components/PopulationAnalysis.tsx
+
 import React from 'react';
 
 interface PopulationAnalysisProps {

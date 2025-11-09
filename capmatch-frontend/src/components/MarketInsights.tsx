@@ -1,3 +1,5 @@
+// src/components/MarketInsights.tsx
+
 import React from 'react';
 
 interface MarketInsightsProps {

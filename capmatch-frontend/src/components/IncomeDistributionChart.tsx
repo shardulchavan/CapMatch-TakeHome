@@ -1,3 +1,5 @@
+// src/components/IncomeDistributionChart.tsx
+
 import React from 'react';
 import {
   Chart as ChartJS,
@@ -98,7 +100,7 @@ const IncomeDistributionChart: React.FC<IncomeDistributionChartProps> = ({ incom
         position: 'top' as const,
         labels: {
           font: {
-            size: 12
+            size: 15
           }
         }
       },
@@ -122,7 +124,7 @@ const IncomeDistributionChart: React.FC<IncomeDistributionChartProps> = ({ incom
         },
         ticks: {
           font: {
-            size: 11
+            size: 14
           }
         }
       },
@@ -135,7 +137,7 @@ const IncomeDistributionChart: React.FC<IncomeDistributionChartProps> = ({ incom
             return tickValue + '%';
           },
           font: {
-            size: 11
+            size: 14
           }
         },
         grid: {
@@ -146,8 +148,8 @@ const IncomeDistributionChart: React.FC<IncomeDistributionChartProps> = ({ incom
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-card p-6">
-      <div className="h-80">
+    <div className="bg-white rounded-lg shadow-card p-6 h-full flex flex-col">
+      <div className="h-80 flex-shrink-0">
         <Bar data={chartData} options={options} />
       </div>
     </div>
