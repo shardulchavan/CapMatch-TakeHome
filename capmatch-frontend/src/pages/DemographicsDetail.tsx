@@ -18,6 +18,7 @@ const DemographicsDetail: React.FC = () => {
   const { address } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+
   
   // Get data from navigation state
   const data = location.state?.data;
@@ -43,6 +44,11 @@ const DemographicsDetail: React.FC = () => {
 
   const demographics = data.demographics;
   const coordinates = data.coordinates;
+  console.log('Demographics data:', demographics);
+  console.log('Map circles:', demographics.map_circles);
+
+  // Make sure the circles array exists
+  const mapCircles = demographics?.map_circles || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -149,12 +155,20 @@ const DemographicsDetail: React.FC = () => {
           <POISection poiData={data.poi_data} />
         </section>
 
+
+
         {/* Interactive Map */}
         <section>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Geographic Coverage</h2>
-          <InteractiveMap 
+          {/* <InteractiveMap 
             center={[coordinates.lat, coordinates.lng]}
             circles={demographics.map_circles}
+            address={coordinates.matched_address}
+          /> */}
+
+          <InteractiveMap 
+            center={[coordinates.lat, coordinates.lng]}
+            circles={demographics.map_circles || []}  
             address={coordinates.matched_address}
           />
         </section>

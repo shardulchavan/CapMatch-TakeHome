@@ -268,7 +268,8 @@ class CensusClient:
             "radius_data": {},
             "growth_metrics": {},
             "raw_responses": {},
-            "errors": []
+            "errors": [],
+            "map_circles": []  # Initialize empty
         }
         
         try:
@@ -331,14 +332,12 @@ class CensusClient:
                                 "geography_level": "county"
                             }
                     
-                    # Add map circles data
-                    populations = {}
-                    for radius_key, data in result["radius_data"].items():
-                        pop = data.get("current", {}).get("total_population", 0)
-                        populations[radius_key] = int(pop) if pop else 0
-                    
-                    result["map_circles"] = aggregator.create_map_circles(lat, lng, radii, populations)
-                    print(f"[CENSUS CLIENT] Created circles with radii: {[c['properties']['radius_miles'] for c in result['map_circles']]}")    
+                    # Get map circles from radius_results (RadiusAggregator already creates them)
+                    result["map_circles"] = radius_results.get("map_circles", [])
+                    if result["map_circles"]:
+                        print(f"[CENSUS CLIENT] Got {len(result['map_circles'])} map circles from aggregator")
+                    else:
+                        print("[CENSUS CLIENT] WARNING: No map circles returned from aggregator")
                     
             except ImportError:
                 print("[CENSUS CLIENT] RadiusAggregator not available, using county-level data")
@@ -374,6 +373,7 @@ class CensusClient:
             print("[CENSUS CLIENT] Formatting data for UI...")
             result["formatted_data"] = self._format_for_demographics_card(result)
             
+            # Try to generate market insights
             try:
                 from gemini_market_insights import generate_gemini_market_insights_async
                 print("[CENSUS CLIENT] Generating market insights with Gemini...")
@@ -381,32 +381,30 @@ class CensusClient:
                 print("[CENSUS CLIENT] ✓ Gemini insights generated")
             except ImportError:
                 print("[CENSUS CLIENT] Gemini not available, using rule-based insights")
-                from market_insights import generate_market_insights
-                result["market_insights"] = generate_market_insights(result)
+                try:
+                    from market_insights import generate_market_insights
+                    result["market_insights"] = generate_market_insights(result)
+                    print("[CENSUS CLIENT] ✓ Rule-based insights generated")
+                except ImportError:
+                    print("[CENSUS CLIENT] Market insights module not available")
+                    result["market_insights"] = {
+                        "demographic_strengths": ["Data analysis in progress"],
+                        "market_opportunities": ["Market evaluation pending"],
+                        "target_demographics": ["Demographics being analyzed"]
+                    }
             except Exception as e:
                 print(f"[CENSUS CLIENT] Gemini error: {e}, falling back to rule-based")
-                from market_insights import generate_market_insights
-                result["market_insights"] = generate_market_insights(result)
-                # else:
-                #     from market_insights import generate_market_insights
-                #     print("[CENSUS CLIENT] Generating market insights...")
-                #     result["market_insights"] = generate_market_insights(result)
-                #     print("[CENSUS CLIENT] ✓ Market insights generated")
-                    
-            except ImportError:
-                print("[CENSUS CLIENT] Market insights module not available")
-                result["market_insights"] = {
-                    "demographic_strengths": ["Data analysis in progress"],
-                    "market_opportunities": ["Market evaluation pending"],
-                    "target_demographics": ["Demographics being analyzed"]
-                }
-            except Exception as e:
-                print(f"[CENSUS CLIENT] Error generating insights: {e}")
-                result["market_insights"] = {
-                    "demographic_strengths": ["Data analysis in progress"],
-                    "market_opportunities": ["Market evaluation pending"],
-                    "target_demographics": ["Demographics being analyzed"]
-                }
+                try:
+                    from market_insights import generate_market_insights
+                    result["market_insights"] = generate_market_insights(result)
+                    print("[CENSUS CLIENT] ✓ Rule-based insights generated (fallback)")
+                except Exception as e2:
+                    print(f"[CENSUS CLIENT] Market insights error: {e2}")
+                    result["market_insights"] = {
+                        "demographic_strengths": ["Data analysis in progress"],
+                        "market_opportunities": ["Market evaluation pending"],
+                        "target_demographics": ["Demographics being analyzed"]
+                    }
             
             print("[CENSUS CLIENT] ✓ Demographics processing complete")
             

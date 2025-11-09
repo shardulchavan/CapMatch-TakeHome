@@ -25,7 +25,7 @@ const RadiusCards: React.FC<RadiusCardsProps> = ({ radiusData }) => {
         const tractCount = data?.tract_count || 1;
         
         // Fix aggregated values
-        const actualIncome = tractCount > 1 ? Math.round(medianIncome / tractCount) : medianIncome;
+        // const actualIncome = tractCount > 1 ? Math.round(medianIncome / tractCount) : medianIncome;
         
         return (
           <div key={radius} className="bg-white rounded-lg shadow-card p-6 hover:shadow-card-hover transition-shadow">
@@ -50,7 +50,8 @@ const RadiusCards: React.FC<RadiusCardsProps> = ({ radiusData }) => {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Median Income</span>
                 <span className="text-sm font-medium text-gray-900">
-                  ${actualIncome.toLocaleString()}
+                  {/* ${actualIncome.toLocaleString()} */}
+                  ${Math.round(medianIncome).toLocaleString()}
                 </span>
               </div>
             </div>

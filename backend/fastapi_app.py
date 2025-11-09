@@ -168,7 +168,7 @@ async def get_demographics(request: AddressRequest):
 
         attom_poi_task = attom_client.get_pois_by_address(
             address=request.address,
-            radius=5
+            radius=10
         )
         
         # Execute all in parallel

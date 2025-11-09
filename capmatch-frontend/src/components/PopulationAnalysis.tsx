@@ -36,9 +36,9 @@ const PopulationAnalysis: React.FC<PopulationAnalysisProps> = ({ radiusData }) =
         const medianAge = currentData.median_age || 0;
         
         // Adjust values if they appear to be aggregated
-        const actualIncome = tractCount > 1 && medianIncome > 1000000 
-          ? Math.round(medianIncome / tractCount) 
-          : medianIncome;
+        // const actualIncome = tractCount > 1 && medianIncome > 1000000 
+        //   ? Math.round(medianIncome / tractCount) 
+        //   : medianIncome;
           
         let actualAge = tractCount > 1 && medianAge > 100
           ? (medianAge / tractCount) 
@@ -70,7 +70,8 @@ const PopulationAnalysis: React.FC<PopulationAnalysisProps> = ({ radiusData }) =
               <div>
                 <p className="text-sm text-gray-500 mb-1">Median Income</p>
                 <p className="text-lg font-semibold text-gray-900">
-                  ${actualIncome > 0 ? (actualIncome / 1000).toFixed(0) : '0'}K
+                  {/* ${actualIncome > 0 ? (actualIncome / 1000).toFixed(0) : '0'}K */}
+                  ${medianIncome > 0 ? (medianIncome / 1000).toFixed(0) : '0'}K
                 </p>
               </div>
               

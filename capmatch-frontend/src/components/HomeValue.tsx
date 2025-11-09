@@ -1,5 +1,3 @@
-// src/components/HomeValue.tsx
-
 import React from 'react';
 
 interface HomeValueGrowthChartProps {
@@ -38,10 +36,9 @@ const HomeValueGrowthChart: React.FC<HomeValueGrowthChartProps> = ({ radiusData 
       // Debug log to see actual values
       console.log(`${radius} - Current: ${current}, Historical: ${historical}, Tracts: ${tractCount}`);
       
-      // Adjust for aggregated values
-      // Based on the data pattern, these appear to be aggregated values
-      const adjustedCurrent = current > 0 ? current / tractCount : 0;
-      const adjustedHistorical = historical > 0 ? historical / tractCount : 0;
+      // Use the median values directly (backend already handles medians correctly)
+      const adjustedCurrent = current;
+      const adjustedHistorical = historical;
       
       // Generate interpolated values
       const values = years.map((year, index) => {
@@ -88,10 +85,10 @@ const HomeValueGrowthChart: React.FC<HomeValueGrowthChartProps> = ({ radiusData 
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   
-  // Calculate scales with valid values only
+  // Calculate scales with better range for visualization
   const validValues = chartData.flatMap(d => d.values).filter(v => v > 0);
-  const minValue = validValues.length > 0 ? Math.min(...validValues) * 0.9 : 0;
-  const maxValue = validValues.length > 0 ? Math.max(...validValues) * 1.1 : 1000000;
+  const minValue = validValues.length > 0 ? Math.min(...validValues) * 0.95 : 0;
+  const maxValue = validValues.length > 0 ? Math.max(...validValues) * 1.05 : 1000000;
   
   const xScale = (index: number) => (index / (years.length - 1)) * chartWidth + padding.left;
   const yScale = (value: number) => {
@@ -113,12 +110,21 @@ const HomeValueGrowthChart: React.FC<HomeValueGrowthChartProps> = ({ radiusData 
   const fiveMileData = radiusData?.['5_mile'];
   let homeValueGrowth = 0;
   if (fiveMileData?.current?.median_home_value && fiveMileData?.historical?.median_home_value) {
-    const currentTractCount = fiveMileData?.tract_count || 1;
-    const adjustedCurrent = fiveMileData.current.median_home_value / currentTractCount;
-    const adjustedHistorical = fiveMileData.historical.median_home_value / currentTractCount;
+    const adjustedCurrent = fiveMileData.current.median_home_value;
+    const adjustedHistorical = fiveMileData.historical.median_home_value;
     homeValueGrowth = ((adjustedCurrent / adjustedHistorical) - 1) * 100;
   }
 
+  // Format Y-axis value based on scale
+  const formatYValue = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `$${Math.round(value / 1000)}K`;
+    } else {
+      return `$${Math.round(value)}`;
+    }
+  };
   
   return (
     <div className="bg-white rounded-lg shadow-card p-6">
@@ -126,7 +132,7 @@ const HomeValueGrowthChart: React.FC<HomeValueGrowthChartProps> = ({ radiusData 
         <div>
           <p className="text-sm text-gray-500">5-Year Growth</p>
           <p className="text-2xl font-semibold text-gray-900">
-            Home: +{homeValueGrowth.toFixed(1)}%
+            Home: {homeValueGrowth > 0 ? '+' : ''}{homeValueGrowth.toFixed(1)}%
           </p>
         </div>
       </div>
@@ -137,8 +143,8 @@ const HomeValueGrowthChart: React.FC<HomeValueGrowthChartProps> = ({ radiusData 
           className="w-full h-auto"
           style={{ maxHeight: '300px' }}
         >
-          {/* Grid lines */}
-          {[0, 0.25, 0.5, 0.75, 1].map(ratio => {
+          {/* Grid lines - more granular */}
+          {[0, 0.2, 0.4, 0.6, 0.8, 1].map(ratio => {
             const y = padding.top + chartHeight * (1 - ratio);
             const value = minValue + (maxValue - minValue) * ratio;
             return (
@@ -157,7 +163,7 @@ const HomeValueGrowthChart: React.FC<HomeValueGrowthChartProps> = ({ radiusData 
                   textAnchor="end"
                   className="text-xs fill-gray-500"
                 >
-                  ${(value / 1000000).toFixed(1)}M
+                  {formatYValue(value)}
                 </text>
               </g>
             );
@@ -232,22 +238,21 @@ const HomeValueGrowthChart: React.FC<HomeValueGrowthChartProps> = ({ radiusData 
       
       {/* Legend */}
       <div className="mt-4 flex justify-center gap-6 text-xs">
-        {chartData.filter(data => parseFloat(data.growthPercent) > 0).map(data => (
+        {chartData.filter(data => parseFloat(data.growthPercent) !== 0).map(data => (
           <div key={data.radius} className="flex items-center gap-2">
             <div 
               className="w-3 h-3 rounded-full" 
               style={{ backgroundColor: data.color }}
             />
             <span className="text-gray-600">
-              {data.label}: +{data.growthPercent}%
+              {data.label}: {parseFloat(data.growthPercent) > 0 ? '+' : ''}{data.growthPercent}%
             </span>
           </div>
         ))}
       </div>
       
       <div className="mt-4 text-center text-xs text-gray-500">
-        Home values tracked from 2017-2022 
-
+        Home values tracked from 2017-2022
       </div>
     </div>
   );
