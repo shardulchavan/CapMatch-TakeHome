@@ -12,6 +12,7 @@ import MarketInsights from '../components/MarketInsights';
 import InteractiveMap from '../components/InteractiveMap';
 import CommunityProfile from '../components/CommunityProfile';
 import TransportationChart from '../components/TransportationChart';
+import POISection from '../components/POISection';
 
 const DemographicsDetail: React.FC = () => {
   const { address } = useParams();
@@ -140,6 +141,12 @@ const DemographicsDetail: React.FC = () => {
         <section>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Key Insights</h2>
           <MarketInsights insights={demographics.market_insights} />
+        </section>
+
+        {/* Nearby Services - POI Data */}
+        <section>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Nearby Services</h2>
+          <POISection poiData={data.poi_data} />
         </section>
 
         {/* Interactive Map */}

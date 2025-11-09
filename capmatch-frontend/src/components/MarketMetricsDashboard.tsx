@@ -287,42 +287,42 @@ const MarketMetricsDashboard: React.FC<MarketMetricsDashboardProps> = ({ radiusD
           {/* Demographic Breakdown from ATTOM */}
           {attomDemographics && (
             <div className="mt-4 space-y-2">
-              <p className="text-xs text-gray-500 font-medium">Age Distribution</p>
+              <p className="text-s text-gray-500 font-medium">Age Distribution</p>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs">
+                <div className="flex justify-between text-s">
                   <span className="text-gray-600">Under 18</span>
                   <span className="font-medium">{attomDemographics.age_distribution.under_18_pct.toFixed(1)}%</span>
                 </div>
-                <div className="flex justify-between text-xs">
+                <div className="flex justify-between text-s">
                   <span className="text-gray-600">18-34</span>
                   <span className="font-medium">{attomDemographics.age_distribution["18_34_pct"].toFixed(1)}%</span>
                 </div>
-                <div className="flex justify-between text-xs">
+                <div className="flex justify-between text-s">
                   <span className="text-gray-600">35-64</span>
                   <span className="font-medium">{attomDemographics.age_distribution["35_64_pct"].toFixed(1)}%</span>
                 </div>
-                <div className="flex justify-between text-xs">
+                <div className="flex justify-between text-s">
                   <span className="text-gray-600">65+</span>
                   <span className="font-medium">{attomDemographics.age_distribution["65_plus_pct"].toFixed(1)}%</span>
                 </div>
               </div>
               
               <div className="pt-2">
-                <p className="text-xs text-gray-500 font-medium">Ethnicity</p>
+                <p className="text-s text-gray-500 font-medium">Ethnicity</p>
                 <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
-                  <div className="text-xs">
+                  <div className="text-s">
                     <span className="text-gray-600">White:</span>
                     <span className="ml-1 font-medium">{attomDemographics.breakdown.white_pct}%</span>
                   </div>
-                  <div className="text-xs">
+                  <div className="text-s">
                     <span className="text-gray-600">Asian:</span>
                     <span className="ml-1 font-medium">{attomDemographics.breakdown.asian_pct}%</span>
                   </div>
-                  <div className="text-xs">
+                  <div className="text-s">
                     <span className="text-gray-600">Hispanic:</span>
                     <span className="ml-1 font-medium">{attomDemographics.breakdown.hispanic_pct}%</span>
                   </div>
-                  <div className="text-xs">
+                  <div className="text-s">
                     <span className="text-gray-600">Black:</span>
                     <span className="ml-1 font-medium">{attomDemographics.breakdown.black_pct}%</span>
                   </div>

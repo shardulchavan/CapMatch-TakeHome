@@ -157,6 +157,7 @@ class AttomClient:
                                 result["pois_by_category"][category].sort(
                                     key=lambda x: x["distance_miles"]
                                 )
+                            result["pois_by_category"][category] = result["pois_by_category"][category][:3]
                             
                             # Calculate total POI count
                             result["poi_count"] = sum(

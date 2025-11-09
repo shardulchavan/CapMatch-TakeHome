@@ -63,11 +63,12 @@ app.add_middleware(
         "https://cap-match-take-home-git-main-shardulchavans-projects.vercel.app",
         "https://cap-match-take-home.vercel.app",
         "https://*.vercel.app"
-                   ],
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 # Request/Response models
 class AddressRequest(BaseModel):
     address: str
@@ -77,6 +78,7 @@ class DemographicsResponse(BaseModel):
     coordinates: Optional[Dict[str, Any]]
     demographics: Optional[Dict[str, Any]]
     attom_data: Optional[Dict[str, Any]]
+    poi_data: Optional[Dict[str, Any]] 
     performance: Dict[str, float]
     error: Optional[str]
     timestamp: str
@@ -94,7 +96,6 @@ async def startup_event():
     print(f"Mode: {'Production' if CENSUS_CLIENTS_AVAILABLE else 'Mock'}")
     print(f"Census API Key: {'Configured' if os.getenv('CENSUS_API_KEY') else 'Not configured'}")
     print(f"ATTOM API Key: {'Configured' if os.getenv('ATTOM_API_KEY') else 'Not configured'}")
-
     print(f"Server: http://localhost:8000")
     print(f"Docs: http://localhost:8000/docs")
     print("="*60 + "\n")
@@ -114,7 +115,8 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "census_api_key": "configured" if os.getenv("CENSUS_API_KEY") else "not configured"
+        "census_api_key": "configured" if os.getenv("CENSUS_API_KEY") else "not configured",
+        "attom_api_key": "configured" if os.getenv("ATTOM_API_KEY") else "not configured"
     }
 
 @app.post("/test-attom")
@@ -128,7 +130,9 @@ async def get_demographics(request: AddressRequest):
     Main endpoint that:
     1. Geocodes the address using Census Bureau
     2. Fetches demographic data with historical comparison
-    3. Returns formatted data for the Demographics card
+    3. Fetches ATTOM community data
+    4. Fetches ATTOM POI data (Personal Services, Healthcare, Education, Financial)
+    5. Returns formatted data for the Demographics card
     """
     start_time = time.time()
     print(f"\n{'='*60}")
@@ -145,37 +149,66 @@ async def get_demographics(request: AddressRequest):
         print(f"[STEP 1] ✓ Geocoding completed in {geocoding_time:.2f} seconds")
         print(f"         Coordinates: lat={coordinates['lat']}, lng={coordinates['lng']}")
         
-        # Step 2: Fetch demographics with history
-        print("\n[STEP 2] Fetching demographics data...")
+        # Step 2: Fetch all data in parallel
+        print("\n[STEP 2] Fetching demographics and POI data...")
         print(f"         Radii: [1, 3, 5] miles")
-        demographics_start = time.time()
+        print(f"         POI Categories: Personal Services, Healthcare, Education, Financial")
+        
+        api_start = time.time()
+        
+        # Create tasks for parallel execution
         census_task = census_client.get_demographics_with_history(
             lat=coordinates["lat"],
             lng=coordinates["lng"],
             radii=[1, 3, 5]
         )
-
-        attom_task = attom_client.get_community_by_address(request.address)
         
-        # Execute both in parallel
-        census_data, attom_data = await asyncio.gather(
+        attom_community_task = attom_client.get_community_by_address(request.address)
+        
+
+        attom_poi_task = attom_client.get_pois_by_address(
+            address=request.address,
+            radius=5
+        )
+        
+        # Execute all in parallel
+        census_data, attom_data, poi_data = await asyncio.gather(
             census_task, 
-            attom_task, 
+            attom_community_task,
+            attom_poi_task,
             return_exceptions=True
         )
         
-        # Handle ATTOM errors gracefully
+        # Handle errors gracefully
         if isinstance(attom_data, Exception):
+            print(f"[WARNING] ATTOM Community API error: {str(attom_data)}")
             attom_data = {"error": str(attom_data)}
-        demographics_time = time.time() - demographics_start
-        print(f"[STEP 2] ✓ Demographics fetched in {demographics_time:.2f} seconds")
+            
+        if isinstance(poi_data, Exception):
+            print(f"[WARNING] ATTOM POI API error: {str(poi_data)}")
+            poi_data = {"error": str(poi_data)}
         
-        # Check if we got growth metrics
-        if census_data .get("growth_metrics"):
+        api_time = time.time() - api_start
+        print(f"[STEP 2] ✓ All APIs fetched in {api_time:.2f} seconds")
+        
+        # Log results summary
+        if census_data.get("growth_metrics"):
             print(f"\n[GROWTH METRICS]")
-            print(f"  Population Growth: {census_data ['growth_metrics'].get('population_growth', 'N/A')}%")
-            print(f"  Income Growth: {census_data ['growth_metrics'].get('income_growth', 'N/A')}%")
-            print(f"  Job Growth: {census_data ['growth_metrics'].get('job_growth', 'N/A')}%")
+            print(f"  Population Growth: {census_data['growth_metrics'].get('population_growth', 'N/A')}%")
+            print(f"  Income Growth: {census_data['growth_metrics'].get('income_growth', 'N/A')}%")
+            print(f"  Job Growth: {census_data['growth_metrics'].get('job_growth', 'N/A')}%")
+        
+        # NEW: Log POI summary
+        if poi_data and not poi_data.get("error"):
+            print(f"\n[POI SUMMARY]")
+            summary = poi_data.get("summary", {})
+            print(f"  Personal Services: {summary.get('personal_services_count', 0)} locations")
+            print(f"  Healthcare: {summary.get('healthcare_count', 0)} locations")
+            print(f"  Education: {summary.get('education_count', 0)} locations")
+            print(f"  Financial Services: {summary.get('banks_count', 0)} locations")
+            if summary.get('closest_poi'):
+                closest = summary['closest_poi']
+                print(f"  Closest POI: {closest['name']} ({closest['distance_miles']:.1f} miles)")
         
         # Step 3: Return response
         total_time = time.time() - start_time
@@ -188,9 +221,10 @@ async def get_demographics(request: AddressRequest):
             coordinates=coordinates,
             demographics=census_data,
             attom_data=attom_data,
+            poi_data=poi_data, 
             performance={
                 "geocoding_time": geocoding_time,
-                "demographics_time": demographics_time,
+                "api_time": api_time,
                 "total_time": total_time
             },
             error=None,
@@ -208,6 +242,8 @@ async def get_demographics(request: AddressRequest):
             address=request.address,
             coordinates=None,
             demographics=None,
+            attom_data=None,
+            poi_data=None,
             performance={"total_time": total_time},
             error=str(e),
             timestamp=datetime.utcnow().isoformat()
